@@ -9,7 +9,7 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { useRouter } from 'next/navigation'
 import { sendAnalytics } from '@/components/FormAnalytics'
-import ReCAPTCHA from 'react-google-recaptcha'
+import CustomReCAPTCHA from '@/components/CustomReCAPTCHA'
 import { useFormPersist } from '@/hooks/useFormPersist'
 import { useFormValidation } from '@/hooks/useFormValidation'
 import { sendEmail } from '@/services/emailService'
@@ -133,6 +133,23 @@ export default function Contact() {
     setFormStatus('sending')
     
     try {
+      // Verify reCAPTCHA first
+      const verificationResponse = await fetch('/api/verify-recaptcha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: recaptchaValue }),
+      })
+
+      const verificationData = await verificationResponse.json()
+
+      if (!verificationData.success) {
+        setErrors(prev => ({ ...prev, recaptcha: 'reCAPTCHA verification failed' }))
+        setFormStatus('idle')
+        return
+      }
+
       if (scheduledTime) {
         // Schedule the email
         const scheduledId = emailScheduler.scheduleEmail(
@@ -315,19 +332,15 @@ export default function Contact() {
                   </div>
 
                   <div className="mb-6">
-                    <ReCAPTCHA
-                      sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+                    <CustomReCAPTCHA
                       onChange={(value) => {
                         setRecaptchaValue(value)
                         if (value) {
                           setErrors(prev => ({ ...prev, recaptcha: '' }))
                         }
                       }}
-                      theme="dark"
+                      error={errors.recaptcha}
                     />
-                    {errors.recaptcha && (
-                      <p className="text-red-500 text-sm mt-1">{errors.recaptcha}</p>
-                    )}
                   </div>
 
                   <button
@@ -338,7 +351,14 @@ export default function Contact() {
                       hover:scale-[1.02] hover:shadow-lg hover:shadow-[#ffd700]/20 
                       active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {formStatus === 'sending' ? 'Sending...' : 'Send Message'}
+                    {formStatus === 'sending' ? (
+                      <span className="flex items-center justify-center">
+                        <LoadingSpinner />
+                        <span className="ml-2">Sending...</span>
+                      </span>
+                    ) : (
+                      'Send Message'
+                    )}
                   </button>
                 </form>
               </motion.div>
