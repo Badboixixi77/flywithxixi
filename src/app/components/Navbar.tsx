@@ -17,34 +17,60 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Close menu when route changes
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [])
+
   const menuItems = [
     { href: '/services', label: 'Services' },
     { href: '/fleet', label: 'Fleet' },
     { href: '/charter', label: 'Charter' },
-    { href: '/contact', label: 'Contact' },
-    {
-      label: 'Email Analytics',
-      href: '/admin/email-analytics',
-      adminOnly: true
-    }
+    { href: '/contact', label: 'Contact' }
   ]
 
+  const menuVariants = {
+    closed: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        duration: 0.3,
+        when: "afterChildren"
+      }
+    },
+    open: {
+      opacity: 1,
+      height: 'auto',
+      transition: {
+        duration: 0.3,
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const itemVariants = {
+    closed: {
+      x: -20,
+      opacity: 0
+    },
+    open: {
+      x: 0,
+      opacity: 1
+    }
+  }
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500
-      ${scrolled 
-        ? 'bg-[#0a1128]/95 backdrop-blur-md shadow-lg shadow-black/10' 
-        : 'bg-transparent'}`}
-    >
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 
+      ${scrolled ? 'bg-white shadow-lg' : 'bg-white'}`}>
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link 
               href="/" 
-              className="text-2xl md:text-3xl font-extrabold tracking-tight transition-colors duration-300
-                bg-gradient-to-r from-[#ffd700] to-[#ffed4a] bg-clip-text text-transparent
-                hover:from-[#ffed4a] hover:to-[#ffd700]"
+              className="text-2xl md:text-3xl font-extrabold text-blue-600 tracking-tight hover:text-blue-700 transition-colors"
             >
-              FlyWith<span className="text-white">XiXi</span>
+              FlyWith<span className="text-gray-900">XiXi</span>
             </Link>
           </div>
           
@@ -54,11 +80,10 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-[#e2e8f0] hover:text-[#ffd700] transition-colors duration-300 relative group"
+                className="text-gray-600 hover:text-gray-900 transition-colors relative group"
               >
                 {item.label}
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#ffd700] transform scale-x-0 
-                  group-hover:scale-x-100 transition-transform origin-left duration-300" />
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
               </Link>
             ))}
           </div>
@@ -74,20 +99,22 @@ export default function Navbar() {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="absolute top-20 left-0 right-0 bg-[#0a1128]/95 backdrop-blur-md border-t border-[#ffd700]/10 md:hidden"
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={menuVariants}
+            className="absolute top-16 left-0 right-0 bg-white shadow-lg border-t md:hidden"
           >
             <div className="px-4 py-2">
               {menuItems.map((item) => (
                 <motion.div
                   key={item.href}
-                  className="border-b border-[#ffd700]/10 last:border-b-0"
+                  variants={itemVariants}
+                  className="border-b border-gray-200 last:border-b-0"
                 >
                   <Link
                     href={item.href}
-                    className="block py-4 text-[#e2e8f0] hover:text-[#ffd700] transition-colors duration-300"
+                    className="block py-4 text-gray-600 hover:text-gray-900 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {item.label}

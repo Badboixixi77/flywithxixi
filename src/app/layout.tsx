@@ -2,12 +2,13 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import EmailJSProvider from '@/components/EmailJSProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Private Air - Luxury Aviation',
-  description: 'Experience luxury private aviation services',
+  title: 'FlyWithXiXi',
+  description: 'Luxury Private Aviation Services',
 }
 
 export default function RootLayout({
@@ -16,12 +17,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-gray-50`}>
-        <Navbar />
-        <main className="pt-16">
-          {children}
-        </main>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} antialiased bg-[#0a1128]`}>
+        <EmailJSProvider>
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+        </EmailJSProvider>
       </body>
     </html>
   )
